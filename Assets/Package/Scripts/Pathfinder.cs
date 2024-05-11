@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ZYTools
@@ -28,8 +29,12 @@ namespace ZYTools
         private List<PathNode> openList = new();
         private HashSet<Vector3Int> closedSet = new();
 
+        private IPathfindDebugger debugger;
         private ISearchGrid grid;
         private bool allowDiagonals;
+        private PathNode startNode;
+        private PathNode endNode;
+        private PathNode currentNode;
 
         public Pathfinder(ISearchGrid grid, bool allowDiagonals)
         {
@@ -37,50 +42,102 @@ namespace ZYTools
             this.allowDiagonals = allowDiagonals;
         }
 
+        public void SetDebugger(IPathfindDebugger debugger)
+        {
+            this.debugger = debugger;
+        }
+
+        public void DebugFindPath(Vector3Int startPos, Vector3Int endPos)
+        {
+            openList.Clear();
+            closedSet.Clear();
+
+            startNode = new PathNode(startPos);
+            endNode = new PathNode(endPos);
+            openList.Add(startNode);
+            currentNode = null;
+
+            debugger?.Init();
+            debugger?.DrawState(currentNode, startNode, endNode, openList, closedSet);
+        }
+
+        public bool DebugNextStep()
+        {
+            if (openList.Count > 0)
+            {
+                openList.Sort();
+                UpdateNextNode();
+                debugger?.DrawState(currentNode, startNode, endNode, openList, closedSet);
+                if (openList.Contains(endNode))
+                {
+                    endNode = openList.Find(node => node.Equals(endNode));
+                    return true;
+                }
+
+                return false;
+            }
+            return true;
+        }
+
+        public List<PathNode> GetFinalPath()
+        {
+            Stack<PathNode> final = new();
+            if (endNode == null)
+            {
+                return new();
+            }
+
+            PathNode nodeRef = endNode.GetParent();
+            while (nodeRef != null)
+            {
+                if (nodeRef.GetParent() != null)
+                {
+                    final.Push(nodeRef);
+                }
+                nodeRef = nodeRef.GetParent();
+            }
+            return final.ToList();
+        }
+
         public List<PathNode> FindPath(Vector3Int startPos, Vector3Int endPos)
         {
             openList.Clear();
             closedSet.Clear();
 
-            List<PathNode> final = new();
             if (startPos == endPos)
             {
-                return final;
+                return new();
             }
 
-            PathNode startNode = new PathNode(startPos);
-            PathNode endNode = new PathNode(endPos);
+            startNode = new PathNode(startPos);
+            endNode = new PathNode(endPos);
 
             openList.Add(startNode);
             while (openList.Count > 0)
             {
                 openList.Sort();
-
-                PathNode currentNode = openList[0];
-                openList.RemoveAt(0);
-                closedSet.Add(currentNode.GetGridPos());
-
-                List<PathNode> neighbors = FindNeighbors(currentNode);
-                foreach (PathNode neighbor in neighbors)
-                {
-                    CalculateCosts(neighbor, endNode);
-                    openList.Add(neighbor);
-                }
-
+                UpdateNextNode();
                 if (openList.Contains(endNode))
                 {
                     endNode = openList.Find(node => node.Equals(endNode));
                     break;
                 }
             }
+            return GetFinalPath();
+        }
 
-            PathNode nodeRef = endNode.GetParent();
-            while (nodeRef != null)
+        private void UpdateNextNode()
+        {
+            currentNode = openList[0];
+            openList.RemoveAt(0);
+            closedSet.Add(currentNode.GetGridPos());
+
+            List<PathNode> neighbors = FindNeighbors(currentNode);
+            foreach (PathNode neighbor in neighbors)
             {
-                final.Add(nodeRef);
-                nodeRef = nodeRef.GetParent();
+                CalculateCosts(neighbor, endNode);
+                openList.Add(neighbor);
             }
-            return final;
         }
 
         private void CalculateCosts(PathNode currentNode, PathNode endNode)

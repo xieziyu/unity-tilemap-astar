@@ -15,11 +15,38 @@ namespace ZYTools
         [SerializeField]
         private Tilemap[] colliderTilemaps;
 
+        [SerializeField]
+        private AStarTilemapPathfindDebugger debugger;
+
         private Pathfinder pathfinder;
 
         private void Awake()
         {
             pathfinder = new(this, allowDiagonals);
+        }
+
+        private void Start()
+        {
+            if (debugger != null)
+            {
+                pathfinder.SetDebugger(debugger);
+                debugger.SetTilemap(this);
+            }
+        }
+
+        public void DebugFindPath(Vector3Int startPos, Vector3Int endPos)
+        {
+            pathfinder.DebugFindPath(startPos, endPos);
+        }
+
+        public bool DebugNextStep()
+        {
+            return pathfinder.DebugNextStep();
+        }
+
+        public List<PathNode> GetFinalPath()
+        {
+            return pathfinder.GetFinalPath();
         }
 
         public List<PathNode> FindPath(Vector3Int startPos, Vector3Int endPos)
