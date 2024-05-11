@@ -4,5 +4,5 @@
 ## Install by git
 
 ```
-https://github.com/iftechio/unity-tilemap-astar.git?path=/Assets/Package
+https://github.com/xieziyu/unity-tilemap-astar.git?path=/Assets/Package
 ```
