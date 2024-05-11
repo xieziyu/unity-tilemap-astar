@@ -33,6 +33,7 @@ namespace ZYTools
             {
                 return false;
             }
+
             foreach (var tilemap in colliderTilemaps)
             {
                 if (tilemap.HasTile(nextPos))
@@ -40,6 +41,25 @@ namespace ZYTools
                     return false;
                 }
             }
+
+            // Fix Diagonal Issue
+            if (allowDiagonals)
+            {
+                if (currentPos.x != nextPos.x && currentPos.y != nextPos.y)
+                {
+                    foreach (var tilemap in colliderTilemaps)
+                    {
+                        if (
+                            tilemap.HasTile(new Vector3Int(currentPos.x, nextPos.y, 0))
+                            || tilemap.HasTile(new Vector3Int(nextPos.x, currentPos.y, 0))
+                        )
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             return true;
         }
 
