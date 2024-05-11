@@ -1,6 +1,6 @@
 {
   "name": "tools.ziyu.unity-tilemap-astar",
-  "displayName": "Tilemap A* Pathfinding",
+  "displayName": "ZYTools - Tilemap A* Pathfinding",
   "version": "0.1.0",
   "unity": "2022.3",
   "unityRelease": "11f1",
