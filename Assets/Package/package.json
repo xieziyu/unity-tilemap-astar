@@ -1,0 +1,20 @@
+{
+  "name": "tools.ziyu.unity-tilemap-astar",
+  "displayName": "Tilemap A* Pathfinding",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "unityRelease": "11f1",
+  "description": "A* Pathfinding for Tilemap in Unity",
+  "category": "Tool",
+  "author": {
+    "name": "xieziyu",
+    "email": "rainnyxzy@gmail.com",
+    "url": "https://github.com/xieziyu"
+  },
+  "dependencies": {},
+  "keywords": [
+    "Scripts",
+    "Astar",
+    "Pathfinding"
+  ]
+}
