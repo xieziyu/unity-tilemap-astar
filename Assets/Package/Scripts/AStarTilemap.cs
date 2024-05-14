@@ -90,14 +90,14 @@ namespace ZYTools
             return true;
         }
 
-        public Vector3Int ToGridXZY(Vector3 position)
+        public Vector3Int ToGridXYZ(Vector3 position)
         {
             return roadTilemap.WorldToCell(position);
         }
 
         public Vector3 ToCellCenter(Vector3 position)
         {
-            return roadTilemap.GetCellCenterWorld(ToGridXZY(position));
+            return roadTilemap.GetCellCenterWorld(ToGridXYZ(position));
         }
     }
 }

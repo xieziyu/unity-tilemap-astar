@@ -99,8 +99,8 @@ namespace ZYTools.Demo
                 return;
             }
             ClearPath();
-            var starPos = astarTilemap.ToGridXZY(startPoint.transform.position);
-            var endPos = astarTilemap.ToGridXZY(endPoint.transform.position);
+            var starPos = astarTilemap.ToGridXYZ(startPoint.transform.position);
+            var endPos = astarTilemap.ToGridXYZ(endPoint.transform.position);
 
             // Trigger Debug Mode:
             if (debugMode)
