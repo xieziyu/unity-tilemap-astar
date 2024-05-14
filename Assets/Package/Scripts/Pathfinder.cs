@@ -86,8 +86,7 @@ namespace ZYTools
             {
                 return new();
             }
-            final.Push(endNode);
-            PathNode nodeRef = endNode.GetParent();
+            PathNode nodeRef = endNode;
             while (nodeRef != null)
             {
                 if (nodeRef.GetParent() != null)
