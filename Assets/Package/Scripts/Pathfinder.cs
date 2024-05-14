@@ -86,7 +86,7 @@ namespace ZYTools
             {
                 return new();
             }
-
+            final.Push(endNode);
             PathNode nodeRef = endNode.GetParent();
             while (nodeRef != null)
             {
@@ -132,7 +132,7 @@ namespace ZYTools
             openList.RemoveAt(0);
             closedSet.Add(currentNode.GetGridPos());
 
-            List<PathNode> neighbors = FindNeighbors(currentNode);
+            List<PathNode> neighbors = FindNeighbors(currentNode, endNode);
             foreach (PathNode neighbor in neighbors)
             {
                 CalculateCosts(neighbor, endNode);
@@ -150,7 +150,7 @@ namespace ZYTools
             currentNode.SetG(dG + StraightFactor);
         }
 
-        private List<PathNode> FindNeighbors(PathNode currentNode)
+        private List<PathNode> FindNeighbors(PathNode currentNode, PathNode endNode)
         {
             List<PathNode> neighbors = new();
             Vector3Int currentPos = currentNode.GetGridPos();
@@ -159,7 +159,10 @@ namespace ZYTools
             foreach (Vector3Int dir in dirs)
             {
                 var posDir = currentPos + dir;
-                if (grid.CanWalk(currentPos, posDir) && !closedSet.Contains(posDir))
+                if (
+                    (endNode.GetGridPos() == posDir || grid.CanWalk(currentPos, posDir))
+                    && !closedSet.Contains(posDir)
+                )
                 {
                     PathNode node = new(posDir);
                     node.SetParent(currentNode);
@@ -173,7 +176,10 @@ namespace ZYTools
                 foreach (Vector3Int dir in diagDirs)
                 {
                     var posDir = currentPos + dir;
-                    if (grid.CanWalk(currentPos, posDir) && !closedSet.Contains(posDir))
+                    if (
+                        (endNode.GetGridPos() == posDir || grid.CanWalk(currentPos, posDir))
+                        && !closedSet.Contains(posDir)
+                    )
                     {
                         PathNode node = new(posDir);
                         node.SetParent(currentNode);
