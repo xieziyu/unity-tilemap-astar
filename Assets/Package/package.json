@@ -1,7 +1,7 @@
 {
   "name": "tools.ziyu.unity-tilemap-astar",
   "displayName": "ZYTools - Tilemap A* Pathfinding",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "unity": "2022.3",
   "unityRelease": "11f1",
   "description": "A* Pathfinding for Tilemap in Unity",
@@ -16,5 +16,12 @@
     "Scripts",
     "Astar",
     "Pathfinding"
+  ],
+  "samples": [
+    {
+      "displayName": "Sample Debugger",
+      "description": "Contains a sample debugger implements IPathfindDebugger for AStarTilemap",
+      "path": "Samples/SampleDebugger"
+    }
   ]
 }

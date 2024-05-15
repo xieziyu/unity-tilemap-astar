@@ -84,6 +84,7 @@ namespace ZYTools
         public void ResetPath()
         {
             pathfinder.ResetPaths();
+            // Debugger
             if (enableDebugMode && debugger != null)
             {
                 debugger.Clear();
@@ -99,6 +100,17 @@ namespace ZYTools
             if (enableDebugMode && debugger != null)
             {
                 debugger.DrawState(pathfinder.GetState());
+
+                if (finished)
+                {
+                    var pathList = pathfinder.GetFinalPath();
+                    foreach (var step in pathList)
+                    {
+                        debugger.DrawStepNode(step);
+                    }
+                    debugger.DrawStartNode(pathfinder.GetStartNode());
+                    debugger.DrawEndNode(pathfinder.GetEndNode());
+                }
             }
             return finished;
         }
@@ -116,7 +128,7 @@ namespace ZYTools
         }
 
         #region Interface Implementation
-        public bool CanWalk(Vector3Int currentPos, Vector3Int nextPos)
+        public bool HasLink(Vector3Int currentPos, Vector3Int nextPos)
         {
             if (!roadTilemap.HasTile(nextPos))
             {

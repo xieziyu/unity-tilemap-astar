@@ -197,7 +197,7 @@ namespace ZYTools
             {
                 var posDir = currentPos + dir;
                 if (
-                    (endNode.GetGridPos() == posDir || grid.CanWalk(currentPos, posDir))
+                    (endNode.GetGridPos() == posDir || grid.HasLink(currentPos, posDir))
                     && !closedSet.Contains(posDir)
                 )
                 {
@@ -214,7 +214,7 @@ namespace ZYTools
                 {
                     var posDir = currentPos + dir;
                     if (
-                        (endNode.GetGridPos() == posDir || grid.CanWalk(currentPos, posDir))
+                        (endNode.GetGridPos() == posDir || grid.HasLink(currentPos, posDir))
                         && !closedSet.Contains(posDir)
                     )
                     {

@@ -15,4 +15,15 @@ namespace ZYTools
         public void DrawClosedSet(ISet<Vector3Int> closedSet);
         public void DrawState(PathfinderState state);
     }
+
+    public enum PathfindDebugNodeType
+    {
+        None,
+        CurrentNode,
+        StartNode,
+        EndNode,
+        OpenNode,
+        ClosedNode,
+        StepNode
+    }
 }

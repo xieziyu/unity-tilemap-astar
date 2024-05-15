@@ -1,20 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace ZYTools
 {
-    public enum PathfindDebugNodeType
-    {
-        None,
-        CurrentNode,
-        StartNode,
-        EndNode,
-        OpenNode,
-        ClosedNode,
-        StepNode
-    }
-
     public class PathfindDebugNode : MonoBehaviour
     {
         [SerializeField]
@@ -34,6 +24,15 @@ namespace ZYTools
 
         [SerializeField]
         private Transform stepNode;
+
+        [SerializeField]
+        private TextMeshPro fCost;
+
+        [SerializeField]
+        private TextMeshPro gCost;
+
+        [SerializeField]
+        private TextMeshPro hCost;
 
         private PathfindDebugNodeType nodeType;
 
@@ -63,6 +62,13 @@ namespace ZYTools
             if (stepNode != null)
             {
                 stepNode.gameObject.SetActive(nodeType == PathfindDebugNodeType.StepNode);
+            }
+
+            if (pathNode != null)
+            {
+                fCost.text = pathNode.GetF().ToString();
+                gCost.text = pathNode.GetG().ToString();
+                hCost.text = pathNode.GetH().ToString();
             }
         }
 

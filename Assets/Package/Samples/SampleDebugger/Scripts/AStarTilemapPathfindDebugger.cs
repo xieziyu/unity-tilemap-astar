@@ -59,12 +59,12 @@ namespace ZYTools
             if (startNodeGO == null)
             {
                 startNodeGO = Instantiate(debugNodePrefab, cellPosition, Quaternion.identity);
-                UpdateNode(startNodeGO, startNode, startPos, PathfindDebugNodeType.StartNode);
             }
             else
             {
                 startNodeGO.transform.position = cellPosition;
             }
+            UpdateNode(startNodeGO, startNode, startPos, PathfindDebugNodeType.StartNode);
         }
 
         public void DrawEndNode(PathNode endNode)
@@ -78,12 +78,12 @@ namespace ZYTools
             if (endNodeGO == null)
             {
                 endNodeGO = Instantiate(debugNodePrefab, cellPosition, Quaternion.identity);
-                UpdateNode(endNodeGO, endNode, endPos, PathfindDebugNodeType.EndNode);
             }
             else
             {
                 endNodeGO.transform.position = cellPosition;
             }
+            UpdateNode(endNodeGO, endNode, endPos, PathfindDebugNodeType.EndNode);
         }
 
         public void DrawCurrentNode(PathNode currentNode)
