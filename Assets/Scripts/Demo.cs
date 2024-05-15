@@ -17,6 +17,7 @@ namespace ZYTools.Demo
         private Camera mainCamera;
         private bool isStepDebugging = false;
         private float stepDelay = 0f;
+        private bool isPaused = false;
 
         private void Awake()
         {
@@ -30,13 +31,18 @@ namespace ZYTools.Demo
                 if (isStepDebugging)
                 {
                     // 中断
-                    isStepDebugging = false;
+                    isPaused = !isPaused;
                 }
                 else
                 {
                     // 更新路径
                     StartPathfinding();
                 }
+                return;
+            }
+
+            if (isPaused)
+            {
                 return;
             }
 
@@ -112,6 +118,7 @@ namespace ZYTools.Demo
             {
                 astarTilemap.FindPath();
             }
+            isPaused = false;
         }
     }
 }

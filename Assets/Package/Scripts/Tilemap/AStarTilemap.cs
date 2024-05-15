@@ -29,6 +29,7 @@ namespace ZYTools
             pathfinder = new(this, allowDiagonals);
         }
 
+        #region Pathfinder Methods
         public void SetDebugger(IPathfindDebugger debugger)
         {
             this.debugger = debugger;
@@ -62,10 +63,7 @@ namespace ZYTools
             // Debugger
             if (enableDebugMode && debugger != null)
             {
-                foreach (var step in pathList)
-                {
-                    debugger.DrawStepNode(step);
-                }
+                DrawFinalPath(pathList);
             }
             return pathList;
         }
@@ -99,17 +97,14 @@ namespace ZYTools
             // Debugger
             if (enableDebugMode && debugger != null)
             {
-                debugger.DrawState(pathfinder.GetState());
-
                 if (finished)
                 {
                     var pathList = pathfinder.GetFinalPath();
-                    foreach (var step in pathList)
-                    {
-                        debugger.DrawStepNode(step);
-                    }
-                    debugger.DrawStartNode(pathfinder.GetStartNode());
-                    debugger.DrawEndNode(pathfinder.GetEndNode());
+                    DrawFinalPath(pathList);
+                }
+                else
+                {
+                    debugger.DrawState(pathfinder.GetState());
                 }
             }
             return finished;
@@ -126,6 +121,7 @@ namespace ZYTools
             SetEndPos(endPos);
             return FindPath();
         }
+        #endregion
 
         #region Interface Implementation
         public bool HasLink(Vector3Int currentPos, Vector3Int nextPos)
@@ -174,6 +170,19 @@ namespace ZYTools
         public Vector3 ToCellCenter(Vector3 position)
         {
             return roadTilemap.GetCellCenterWorld(ToGridPos(position));
+        }
+        #endregion
+
+        #region Private Methods
+        private void DrawFinalPath(List<PathNode> pathList)
+        {
+            debugger.Clear();
+            foreach (var step in pathList)
+            {
+                debugger.DrawStepNode(step);
+            }
+            debugger.DrawStartNode(pathfinder.GetStartNode());
+            debugger.DrawEndNode(pathfinder.GetEndNode());
         }
         #endregion
     }

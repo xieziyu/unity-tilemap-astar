@@ -43,8 +43,16 @@ namespace ZYTools
                 Destroy(go);
             }
             nodeGOMap.Clear();
-            startNodeGO = null;
-            endNodeGO = null;
+            if (startNodeGO != null)
+            {
+                Destroy(startNodeGO);
+                startNodeGO = null;
+            }
+            if (endNodeGO != null)
+            {
+                Destroy(endNodeGO);
+                endNodeGO = null;
+            }
         }
 
         #region Interface Implementation
