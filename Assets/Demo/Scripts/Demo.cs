@@ -9,24 +9,14 @@ namespace ZYTools.Demo
         private AStarTilemap astarTilemap;
 
         [SerializeField]
-        private bool debugMode;
+        private bool stepMode;
 
         [SerializeField]
-        private GameObject startPointPrefab;
-
-        [SerializeField]
-        private GameObject endPointPrefab;
-
-        [SerializeField]
-        private GameObject stepPrefab;
+        private float debugStepDelay = 0.1f;
 
         private Camera mainCamera;
-        private GameObject startPoint;
-        private GameObject endPoint;
-        private List<GameObject> stepList = new();
-        private bool isDebugging = false;
-        private readonly float debugStepDelay = 0.1f;
-        private float debugDelay = 0f;
+        private bool isStepDebugging = false;
+        private float stepDelay = 0f;
 
         private void Awake()
         {
@@ -35,6 +25,32 @@ namespace ZYTools.Demo
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                if (isStepDebugging)
+                {
+                    // 中断
+                    isStepDebugging = false;
+                }
+                else
+                {
+                    // 更新路径
+                    StartPathfinding();
+                }
+                return;
+            }
+
+            if (isStepDebugging)
+            {
+                stepDelay += Time.deltaTime;
+                if (stepDelay >= debugStepDelay)
+                {
+                    TriggerNextStep();
+                    stepDelay = 0;
+                }
+                return;
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 SetStartPoint();
@@ -47,18 +63,13 @@ namespace ZYTools.Demo
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
-                UpdatePath();
+                StartPathfinding();
                 return;
             }
-
-            if (isDebugging)
+            else if (Input.GetKeyDown(KeyCode.R))
             {
-                debugDelay += Time.deltaTime;
-                if (debugDelay >= debugStepDelay)
-                {
-                    TriggerDebugStep();
-                    debugDelay = 0;
-                }
+                astarTilemap.ResetPath();
+                return;
             }
         }
 
@@ -66,90 +77,41 @@ namespace ZYTools.Demo
         {
             Vector3 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 cellPosition = astarTilemap.ToCellCenter(mousePos);
-            if (startPoint == null)
-            {
-                startPoint = Instantiate(startPointPrefab, cellPosition, Quaternion.identity);
-            }
-            else
-            {
-                startPoint.transform.position = cellPosition;
-            }
-            ClearPath();
+            astarTilemap.SetStartPos(astarTilemap.ToGridPos(cellPosition));
+            astarTilemap.ResetPath();
         }
 
         private void SetEndPoint()
         {
             Vector3 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 cellPosition = astarTilemap.ToCellCenter(mousePos);
-            if (endPoint == null)
+            astarTilemap.SetEndPos(astarTilemap.ToGridPos(cellPosition));
+            astarTilemap.ResetPath();
+        }
+
+        private void TriggerNextStep()
+        {
+            if (!isStepDebugging)
             {
-                endPoint = Instantiate(endPointPrefab, cellPosition, Quaternion.identity);
+                return;
+            }
+            var finished = astarTilemap.StepNext();
+            isStepDebugging = !finished;
+        }
+
+        private void StartPathfinding()
+        {
+            astarTilemap.ResetPath();
+            if (stepMode)
+            {
+                astarTilemap.StepStartFindPath();
+                isStepDebugging = true;
+                stepDelay = 0;
             }
             else
             {
-                endPoint.transform.position = cellPosition;
+                astarTilemap.FindPath();
             }
-            ClearPath();
-        }
-
-        private void TriggerDebugStep()
-        {
-            if (!isDebugging)
-            {
-                return;
-            }
-            var finished = astarTilemap.DebugNextStep();
-            isDebugging = !finished;
-            if (finished)
-            {
-                var paths = astarTilemap.GetFinalPath();
-                DrawPath(paths);
-            }
-        }
-
-        private void UpdatePath()
-        {
-            if (startPoint == null || endPoint == null)
-            {
-                return;
-            }
-            ClearPath();
-            var starPos = astarTilemap.ToGridXYZ(startPoint.transform.position);
-            var endPos = astarTilemap.ToGridXYZ(endPoint.transform.position);
-
-            // Trigger Debug Mode:
-            if (debugMode)
-            {
-                astarTilemap.DebugFindPath(starPos, endPos);
-                isDebugging = true;
-                debugDelay = 0;
-                return;
-            }
-
-            var paths = astarTilemap.FindPath(starPos, endPos);
-            DrawPath(paths);
-        }
-
-        private void DrawPath(List<PathNode> paths)
-        {
-            foreach (var path in paths)
-            {
-                var step = Instantiate(
-                    stepPrefab,
-                    astarTilemap.ToCellCenter(path.GetGridPos()),
-                    Quaternion.identity
-                );
-                stepList.Add(step);
-            }
-        }
-
-        private void ClearPath()
-        {
-            foreach (var step in stepList)
-            {
-                Destroy(step);
-            }
-            stepList.Clear();
         }
     }
 }
