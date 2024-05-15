@@ -21,7 +21,7 @@
     {
       "displayName": "Sample Debugger",
       "description": "Contains a sample debugger implements IPathfindDebugger for AStarTilemap",
-      "path": "Samples/SampleDebugger"
+      "path": "Samples~/SampleDebugger"
     }
   ]
 }
