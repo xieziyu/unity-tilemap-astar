@@ -130,12 +130,16 @@ namespace ZYTools
             currentNode = openList[0];
             openList.RemoveAt(0);
             closedSet.Add(currentNode.GetGridPos());
+            Debug.Log("openList.Count: " + openList.Count + " closedSet.Count: " + closedSet.Count);
 
             List<PathNode> neighbors = FindNeighbors(currentNode, endNode);
             foreach (PathNode neighbor in neighbors)
             {
                 CalculateCosts(neighbor, endNode);
-                openList.Add(neighbor);
+                if (!openList.Contains(neighbor))
+                {
+                    openList.Add(neighbor);
+                }
             }
         }
 

@@ -25,6 +25,8 @@ namespace ZYTools.Demo
         private GameObject endPoint;
         private List<GameObject> stepList = new();
         private bool isDebugging = false;
+        private readonly float debugStepDelay = 0.1f;
+        private float debugDelay = 0f;
 
         private void Awake()
         {
@@ -36,14 +38,27 @@ namespace ZYTools.Demo
             if (Input.GetMouseButtonDown(0))
             {
                 SetStartPoint();
+                return;
             }
             else if (Input.GetMouseButtonDown(1))
             {
                 SetEndPoint();
+                return;
             }
             else if (Input.GetKeyDown(KeyCode.Space))
             {
-                TriggerDebugStep();
+                UpdatePath();
+                return;
+            }
+
+            if (isDebugging)
+            {
+                debugDelay += Time.deltaTime;
+                if (debugDelay >= debugStepDelay)
+                {
+                    TriggerDebugStep();
+                    debugDelay = 0;
+                }
             }
         }
 
@@ -59,7 +74,7 @@ namespace ZYTools.Demo
             {
                 startPoint.transform.position = cellPosition;
             }
-            UpdatePath();
+            ClearPath();
         }
 
         private void SetEndPoint()
@@ -74,7 +89,7 @@ namespace ZYTools.Demo
             {
                 endPoint.transform.position = cellPosition;
             }
-            UpdatePath();
+            ClearPath();
         }
 
         private void TriggerDebugStep()
@@ -107,6 +122,7 @@ namespace ZYTools.Demo
             {
                 astarTilemap.DebugFindPath(starPos, endPos);
                 isDebugging = true;
+                debugDelay = 0;
                 return;
             }
 
