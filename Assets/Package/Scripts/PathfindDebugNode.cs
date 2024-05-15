@@ -12,7 +12,7 @@ namespace ZYTools
         EndNode,
         OpenNode,
         ClosedNode,
-        ParentNode
+        StepNode
     }
 
     public class PathfindDebugNode : MonoBehaviour
@@ -33,7 +33,7 @@ namespace ZYTools
         private Transform closedNode;
 
         [SerializeField]
-        private Transform parentNode;
+        private Transform stepNode;
 
         private PathfindDebugNodeType nodeType;
 
@@ -60,9 +60,9 @@ namespace ZYTools
             {
                 closedNode.gameObject.SetActive(nodeType == PathfindDebugNodeType.ClosedNode);
             }
-            if (parentNode != null)
+            if (stepNode != null)
             {
-                parentNode.gameObject.SetActive(nodeType == PathfindDebugNodeType.ParentNode);
+                stepNode.gameObject.SetActive(nodeType == PathfindDebugNodeType.StepNode);
             }
         }
 

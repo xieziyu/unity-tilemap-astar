@@ -6,18 +6,22 @@ namespace ZYTools
 {
     public class AStarTilemap : MonoBehaviour, ISearchGrid
     {
-        [SerializeField]
-        private bool allowDiagonals;
-
+        [Header("Tilemap Settings")]
         [SerializeField]
         private Tilemap roadTilemap;
 
         [SerializeField]
         private Tilemap[] colliderTilemaps;
 
+        [Header("Pathfinder Settings")]
         [SerializeField]
-        private AStarTilemapPathfindDebugger debugger;
+        private bool allowDiagonals;
 
+        [Header("Debug")]
+        [SerializeField]
+        private bool enableDebugMode;
+
+        private IPathfindDebugger debugger;
         private Pathfinder pathfinder;
 
         private void Awake()
@@ -25,23 +29,78 @@ namespace ZYTools
             pathfinder = new(this, allowDiagonals);
         }
 
-        private void Start()
+        public void SetDebugger(IPathfindDebugger debugger)
         {
-            if (debugger != null)
+            this.debugger = debugger;
+        }
+
+        public void SetStartPos(Vector3Int startPos)
+        {
+            var node = new PathNode(startPos);
+            pathfinder.SetStartNode(node);
+            // Debugger
+            if (enableDebugMode && debugger != null)
             {
-                pathfinder.SetDebugger(debugger);
-                debugger.SetTilemap(this);
+                debugger.DrawStartNode(node);
             }
         }
 
-        public void DebugFindPath(Vector3Int startPos, Vector3Int endPos)
+        public void SetEndPos(Vector3Int endPos)
         {
-            pathfinder.DebugFindPath(startPos, endPos);
+            var node = new PathNode(endPos);
+            pathfinder.SetEndNode(node);
+            // Debugger
+            if (enableDebugMode && debugger != null)
+            {
+                debugger.DrawEndNode(node);
+            }
         }
 
-        public bool DebugNextStep()
+        public List<PathNode> FindPath()
         {
-            return pathfinder.DebugNextStep();
+            var pathList = pathfinder.FindPath();
+            // Debugger
+            if (enableDebugMode && debugger != null)
+            {
+                foreach (var step in pathList)
+                {
+                    debugger.DrawStepNode(step);
+                }
+            }
+            return pathList;
+        }
+
+        public void StepStartFindPath()
+        {
+            pathfinder.StepStartFindPath();
+            // Debugger
+            if (enableDebugMode && debugger != null)
+            {
+                debugger.Clear();
+                debugger.DrawState(pathfinder.GetState());
+            }
+        }
+
+        public void ResetPath()
+        {
+            pathfinder.ResetPaths();
+            if (enableDebugMode && debugger != null)
+            {
+                debugger.Clear();
+                debugger.DrawStartNode(pathfinder.GetStartNode());
+                debugger.DrawEndNode(pathfinder.GetEndNode());
+            }
+        }
+
+        public bool StepNext()
+        {
+            bool finished = pathfinder.StepNext();
+            // Debugger
+            if (enableDebugMode && debugger != null)
+            {
+                debugger.DrawState(pathfinder.GetState());
+            }
+            return finished;
         }
 
         public List<PathNode> GetFinalPath()
@@ -51,9 +110,12 @@ namespace ZYTools
 
         public List<PathNode> FindPath(Vector3Int startPos, Vector3Int endPos)
         {
-            return pathfinder.FindPath(startPos, endPos);
+            SetStartPos(startPos);
+            SetEndPos(endPos);
+            return FindPath();
         }
 
+        #region Interface Implementation
         public bool CanWalk(Vector3Int currentPos, Vector3Int nextPos)
         {
             if (!roadTilemap.HasTile(nextPos))
@@ -89,15 +151,18 @@ namespace ZYTools
 
             return true;
         }
+        #endregion
 
-        public Vector3Int ToGridXYZ(Vector3 position)
+        #region Helper Methods
+        public Vector3Int ToGridPos(Vector3 position)
         {
             return roadTilemap.WorldToCell(position);
         }
 
         public Vector3 ToCellCenter(Vector3 position)
         {
-            return roadTilemap.GetCellCenterWorld(ToGridXYZ(position));
+            return roadTilemap.GetCellCenterWorld(ToGridPos(position));
         }
+        #endregion
     }
 }

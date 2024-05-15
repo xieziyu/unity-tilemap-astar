@@ -8,10 +8,20 @@ namespace ZYTools
         [SerializeField]
         private GameObject debugNodePrefab;
 
+        [SerializeField]
         private AStarTilemap aStarTilemap;
+
         private Dictionary<Vector3Int, GameObject> nodeGOMap = new();
         private GameObject startNodeGO;
         private GameObject endNodeGO;
+
+        private void Awake()
+        {
+            if (aStarTilemap != null)
+            {
+                aStarTilemap.SetDebugger(this);
+            }
+        }
 
         private void OnDestroy()
         {
@@ -26,56 +36,102 @@ namespace ZYTools
             endNodeGO = null;
         }
 
-        public void Init()
+        public void Clear()
         {
             foreach (var go in nodeGOMap.Values)
             {
                 Destroy(go);
             }
             nodeGOMap.Clear();
+            startNodeGO = null;
+            endNodeGO = null;
         }
 
-        public void SetTilemap(AStarTilemap aStarTilemap)
+        #region Interface Implementation
+        public void DrawStartNode(PathNode startNode)
         {
-            this.aStarTilemap = aStarTilemap;
-        }
-
-        public void DrawState(
-            PathNode currentNode,
-            PathNode startNode,
-            PathNode endNode,
-            List<PathNode> openList,
-            HashSet<Vector3Int> closedSet
-        )
-        {
-            // Start Node
+            if (startNode == null)
+            {
+                return;
+            }
+            var startPos = startNode.GetGridPos();
+            var cellPosition = aStarTilemap.ToCellCenter(startPos);
             if (startNodeGO == null)
             {
-                startNodeGO = Instantiate(
-                    debugNodePrefab,
-                    aStarTilemap.ToCellCenter(startNode.GetGridPos()),
-                    Quaternion.identity
-                );
-                UpdateNode(
-                    startNodeGO,
-                    startNode,
-                    startNode.GetGridPos(),
-                    PathfindDebugNodeType.StartNode
-                );
+                startNodeGO = Instantiate(debugNodePrefab, cellPosition, Quaternion.identity);
+                UpdateNode(startNodeGO, startNode, startPos, PathfindDebugNodeType.StartNode);
             }
+            else
+            {
+                startNodeGO.transform.position = cellPosition;
+            }
+        }
 
-            // End Node
+        public void DrawEndNode(PathNode endNode)
+        {
+            if (endNode == null)
+            {
+                return;
+            }
+            var endPos = endNode.GetGridPos();
+            var cellPosition = aStarTilemap.ToCellCenter(endPos);
             if (endNodeGO == null)
             {
-                endNodeGO = Instantiate(
+                endNodeGO = Instantiate(debugNodePrefab, cellPosition, Quaternion.identity);
+                UpdateNode(endNodeGO, endNode, endPos, PathfindDebugNodeType.EndNode);
+            }
+            else
+            {
+                endNodeGO.transform.position = cellPosition;
+            }
+        }
+
+        public void DrawCurrentNode(PathNode currentNode)
+        {
+            if (currentNode == null)
+            {
+                return;
+            }
+            var currentPos = currentNode.GetGridPos();
+            if (!nodeGOMap.TryGetValue(currentPos, out GameObject currentGO))
+            {
+                currentGO = Instantiate(
                     debugNodePrefab,
-                    aStarTilemap.ToCellCenter(endNode.GetGridPos()),
+                    aStarTilemap.ToCellCenter(currentPos),
                     Quaternion.identity
                 );
-                UpdateNode(endNodeGO, endNode, endNode.GetGridPos(), PathfindDebugNodeType.EndNode);
             }
+            UpdateNode(currentGO, currentNode, currentPos, PathfindDebugNodeType.CurrentNode);
 
-            // Open List
+            // Draw Parent Nodes
+            var stepNode = currentNode.GetParent();
+            while (stepNode != null)
+            {
+                DrawStepNode(stepNode);
+                stepNode = stepNode.GetParent();
+            }
+        }
+
+        public void DrawStepNode(PathNode stepNode)
+        {
+            if (stepNode == null)
+            {
+                return;
+            }
+            var stepPos = stepNode.GetGridPos();
+            if (!nodeGOMap.TryGetValue(stepPos, out GameObject stepGO))
+            {
+                stepGO = Instantiate(
+                    debugNodePrefab,
+                    aStarTilemap.ToCellCenter(stepPos),
+                    Quaternion.identity
+                );
+            }
+            UpdateNode(stepGO, stepNode, stepPos, PathfindDebugNodeType.StepNode);
+        }
+
+        public void DrawOpenList(IEnumerable<PathNode> openList)
+        {
             foreach (PathNode node in openList)
             {
                 GameObject nodeGO;
@@ -94,8 +150,10 @@ namespace ZYTools
                 }
                 UpdateNode(nodeGO, node, nodePos, PathfindDebugNodeType.OpenNode);
             }
+        }
 
-            // Closed Set
+        public void DrawClosedSet(ISet<Vector3Int> closedSet)
+        {
             foreach (Vector3Int nodePos in closedSet)
             {
                 GameObject nodeGO;
@@ -113,26 +171,17 @@ namespace ZYTools
                 }
                 UpdateNode(nodeGO, null, nodePos, PathfindDebugNodeType.ClosedNode);
             }
-
-            // Current Node
-            if (currentNode != null)
-            {
-                if (!nodeGOMap.TryGetValue(currentNode.GetGridPos(), out GameObject currentGO))
-                {
-                    currentGO = Instantiate(
-                        debugNodePrefab,
-                        aStarTilemap.ToCellCenter(currentNode.GetGridPos()),
-                        Quaternion.identity
-                    );
-                }
-                UpdateNode(
-                    currentGO,
-                    currentNode,
-                    currentNode.GetGridPos(),
-                    PathfindDebugNodeType.CurrentNode
-                );
-            }
         }
+
+        public void DrawState(PathfinderState state)
+        {
+            DrawStartNode(state.startNode);
+            DrawEndNode(state.endNode);
+            DrawOpenList(state.openList);
+            DrawClosedSet(state.closedSet);
+            DrawCurrentNode(state.currentNode);
+        }
+        #endregion
 
         private void UpdateNode(
             GameObject go,

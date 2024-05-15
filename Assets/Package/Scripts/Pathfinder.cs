@@ -26,10 +26,9 @@ namespace ZYTools
         };
         #endregion
 
-        private List<PathNode> openList = new();
-        private HashSet<Vector3Int> closedSet = new();
+        private List<PathNode> openList;
+        private HashSet<Vector3Int> closedSet;
 
-        private IPathfindDebugger debugger;
         private ISearchGrid grid;
         private bool allowDiagonals;
         private PathNode startNode;
@@ -40,34 +39,72 @@ namespace ZYTools
         {
             this.grid = grid;
             this.allowDiagonals = allowDiagonals;
+            openList = new();
+            closedSet = new();
         }
 
-        public void SetDebugger(IPathfindDebugger debugger)
+        #region Step Methods
+        public void SetStartNode(PathNode startNode)
         {
-            this.debugger = debugger;
+            this.startNode = startNode;
         }
 
-        public void DebugFindPath(Vector3Int startPos, Vector3Int endPos)
+        public void SetEndNode(PathNode endNode)
+        {
+            this.endNode = endNode;
+        }
+
+        public PathfinderState GetState()
+        {
+            return new PathfinderState
+            {
+                currentNode = currentNode,
+                startNode = startNode,
+                endNode = endNode,
+                openList = openList,
+                closedSet = closedSet
+            };
+        }
+
+        public List<PathNode> FindPath()
         {
             openList.Clear();
             closedSet.Clear();
 
-            startNode = new PathNode(startPos);
-            endNode = new PathNode(endPos);
-            openList.Add(startNode);
-            currentNode = null;
+            if (startNode == null || endNode == null || startNode == endNode)
+            {
+                return new();
+            }
 
-            debugger?.Init();
-            debugger?.DrawState(currentNode, startNode, endNode, openList, closedSet);
+            openList.Add(startNode);
+            while (openList.Count > 0)
+            {
+                openList.Sort();
+                UpdateNextNode();
+                if (openList.Contains(endNode))
+                {
+                    endNode = openList.Find(node => node.Equals(endNode));
+                    break;
+                }
+            }
+            return GetFinalPath();
         }
 
-        public bool DebugNextStep()
+        public void StepStartFindPath()
+        {
+            openList.Clear();
+            closedSet.Clear();
+            openList.Add(startNode);
+            currentNode = null;
+        }
+
+        public bool StepNext()
         {
             if (openList.Count > 0)
             {
                 openList.Sort();
                 UpdateNextNode();
-                debugger?.DrawState(currentNode, startNode, endNode, openList, closedSet);
+                // debugger?.DrawState(currentNode, startNode, endNode, openList, closedSet);
                 if (openList.Contains(endNode))
                 {
                     endNode = openList.Find(node => node.Equals(endNode));
@@ -77,6 +114,14 @@ namespace ZYTools
                 return false;
             }
             return true;
+        }
+        #endregion
+
+        public void ResetPaths()
+        {
+            currentNode = null;
+            openList.Clear();
+            closedSet.Clear();
         }
 
         public List<PathNode> GetFinalPath()
@@ -98,31 +143,21 @@ namespace ZYTools
             return final.ToList();
         }
 
-        public List<PathNode> FindPath(Vector3Int startPos, Vector3Int endPos)
+        public List<PathNode> FindPath(PathNode startNode, PathNode endNode)
         {
-            openList.Clear();
-            closedSet.Clear();
+            SetStartNode(startNode);
+            SetEndNode(endNode);
+            return FindPath();
+        }
 
-            if (startPos == endPos)
-            {
-                return new();
-            }
+        public PathNode GetStartNode()
+        {
+            return startNode;
+        }
 
-            startNode = new PathNode(startPos);
-            endNode = new PathNode(endPos);
-
-            openList.Add(startNode);
-            while (openList.Count > 0)
-            {
-                openList.Sort();
-                UpdateNextNode();
-                if (openList.Contains(endNode))
-                {
-                    endNode = openList.Find(node => node.Equals(endNode));
-                    break;
-                }
-            }
-            return GetFinalPath();
+        public PathNode GetEndNode()
+        {
+            return endNode;
         }
 
         private void UpdateNextNode()

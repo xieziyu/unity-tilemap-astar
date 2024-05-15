@@ -4,6 +4,6 @@ namespace ZYTools
 {
     public interface ISearchGrid
     {
-        public bool CanWalk(Vector3Int currentPos, Vector3Int nextPos);
+        public bool CanWalk(Vector3Int currentGrid, Vector3Int nextGrid);
     }
 }
